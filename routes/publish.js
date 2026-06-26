@@ -24,7 +24,7 @@ export default function publishRoute(req, res) {
       author: metadata.author,
       repo: metadata.repo,
       description: metadata.description || "",
-      latest: metadata.version
+      latest: metadata.version,
       kind: metadata.main ? "main" : "bin"
     };
 
