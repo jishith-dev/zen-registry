@@ -107,7 +107,7 @@ Authentication is stored locally in:
 Publish a package:
 
 ```bash
-zen publish mypackage
+zen publish
 ```
 
 Requirements:

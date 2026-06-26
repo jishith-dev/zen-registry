@@ -21,7 +21,7 @@ zen login
 Publish your package:
 
 ```bash
-zen publish mypackage
+zen publish
 ```
 
 Update an existing package by increasing the version in `zen.json` and publishing again.
