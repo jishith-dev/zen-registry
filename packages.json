@@ -1,14 +1,3 @@
 {
-  "test-lib": {
-    "author": "jishith-dev",
-    "repo": "https://github.com/jishith-dev/zen-test-lib",
-    "description": "Test library",
-    "latest": "1.0.0"
-  },
-  "test-lib-new": {
-    "author": "jishith-dev",
-    "repo": "https://github.com/jishith-dev/zen-test-lib",
-    "description": "Test library",
-    "latest": "1.0.0"
-  }
+  
 }
