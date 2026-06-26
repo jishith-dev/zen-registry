@@ -1,51 +1,78 @@
 # Contributing to Zen Registry
 
-## Adding Your Package
+Thank you for contributing to the Zen ecosystem.
 
-1. Ensure your Zen project is in a public GitHub repo
-2. Tag a release (e.g., `v1.0.0`)
-3. Add `.zen` source files to the release
-4. Fork this repo and edit `packages.json`:
+## Publishing Packages
+
+Publishing is handled entirely through the Zen CLI.
+
+Create an account:
+
+```bash
+zen signup
+```
+
+Login:
+
+```bash
+zen login
+```
+
+Publish your package:
+
+```bash
+zen publish mypackage
+```
+
+Update an existing package by increasing the version in `zen.json` and publishing again.
+
+Remove a package:
+
+```bash
+zen unpublish mypackage
+```
+
+---
+
+## Package Requirements
+
+Every package must:
+
+- Have a valid `zen.json`
+- Be hosted in a public GitHub repository
+- Use Semantic Versioning (`major.minor.patch`)
+- Have a unique package name
+- Include a meaningful description
+- Contain working Zen source code
+
+Example:
 
 ```json
 {
-  "your-package": {
-    "author": "your-github-username",
-    "repo": "https://github.com/your-username/zen-your-package",
-    "description": "What it does (under 100 chars)",
-    "latest": "1.0.0"
-  }
+  "name": "mypackage",
+  "version": "1.0.0",
+  "author": "your-github-username",
+  "repo": "https://github.com/your-github-username/mypackage",
+  "description": "Example package",
+  "bin": "lib.zen"
 }
 ```
 
-5. Create a PR with title: `add: your-package v1.0.0`
+Applications should use `main` instead of `bin`.
 
-## Requirements
+---
 
-- **Valid zen.json** - project must have zen.json with name, version, author
-- **Public GitHub repo** - anyone should be able to download releases
-- **Semantic versioning** - use major.minor.patch (1.0.0)
-- **README** - include instructions in your repo
-- **Working code** - package must be functional
+## Package Ownership
 
-## Review Process
+Packages belong to the account that originally published them.
 
-- Check for valid zen.json format
-- Verify GitHub repo is accessible
-- Confirm package name is unique (lowercase, hyphens ok)
-- Accept or request changes
+Only the owner can:
 
-## Updating Your Package
+- Publish new versions
+- Unpublish the package
 
-Add new version to packages.json:
-```json
-"your-package": {
-  ...
-  "latest": "1.1.0"
-}
-```
+---
 
-## Removal
+## Reporting Issues
 
-Open an issue if a package needs to be removed.
-
+If you discover a bug or security issue in the registry, please open an issue in this repository with enough information to reproduce it.

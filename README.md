@@ -2,67 +2,166 @@
 
 Official package registry for the Zen programming language.
 
-## Install a Package
+## Features
+
+- Install packages from the Zen Registry
+- Publish packages directly from the CLI
+- Secure account-based authentication
+- GitHub-hosted package source
+- Package ownership verification
+
+---
+
+## Installation
+
+Install a package:
+
+```bash
+zen install <package-name>
+```
+
+Example:
 
 ```bash
 zen install banking
 zen install calculator
 ```
 
-Packages are installed to `~/.zen/packages/`
+Library packages are installed to:
 
-## Publish Your Package
+```text
+~/.zen/packages/
+```
 
-1. Create a GitHub repo with your Zen project
-2. Add `zen.json` to your project:
-   ```json
-   {
-     "name": "mypackage",
-     "version": "1.0.0",
-     "kind": "lib",
-     "author": "your-username",
-     "description": "What your package does",
-     "repo": "https://github.com/your-username/zen-mypackage",
-     "main": "main.zen"
-   }
-   ```
+Runnable applications are cloned into the current working directory.
 
-3. Create a release on GitHub with your Zen files
+---
 
-4. Submit PR to add your package to `packages.json`:
-   ```json
-   "mypackage": {
-     "author": "your-username",
-     "repo": "https://github.com/your-username/zen-mypackage",
-     "description": "What your package does",
-     "latest": "1.0.0"
-   }
-   ```
+## Creating a Package
 
-Or run:
+Create a new library:
+
+```bash
+zen init mypackage --bin
+```
+
+Create a new application:
+
+```bash
+zen init myapp
+```
+
+Example `zen.json`:
+
+```json
+{
+  "name": "mypackage",
+  "version": "1.0.0",
+  "author": "your-github-username",
+  "repo": "https://github.com/your-github-username/mypackage",
+  "description": "Example package",
+  "bin": "lib.zen"
+}
+```
+
+For applications, replace `bin` with:
+
+```json
+{
+  "main": "main.zen"
+}
+```
+
+---
+
+## Authentication
+
+Create an account:
+
+```bash
+zen signup
+```
+
+Login:
+
+```bash
+zen login
+```
+
+Logout:
+
+```bash
+zen logout
+```
+
+Authentication is stored locally in:
+
+```text
+~/.zen/auth.json
+```
+
+---
+
+## Publishing
+
+Publish a package:
+
 ```bash
 zen publish mypackage
 ```
 
-## Registry Format
+Requirements:
 
-`packages.json` maps package names to metadata:
+- Logged in with `zen login`
+- Valid `zen.json`
+- Public GitHub repository
+- Unique package name
+
+---
+
+## Unpublishing
+
+Remove one of your published packages:
+
+```bash
+zen unpublish mypackage
+```
+
+Only the package owner can unpublish a package.
+
+---
+
+## Package Metadata
+
+Each package is stored in the registry as:
 
 ```json
 {
-  "package-name": {
-    "author": "github-username",
-    "repo": "https://github.com/username/repo",
-    "description": "Short description",
+  "mypackage": {
+    "author": "your-github-username",
+    "repo": "https://github.com/your-github-username/mypackage",
+    "description": "Example package",
     "latest": "1.0.0"
   }
 }
 ```
 
-## Guidelines
+---
 
-- Package names must be lowercase, alphanumeric, hyphens allowed
-- One package per GitHub repo
-- Keep descriptions under 100 characters
-- Use semver for versions (1.0.0)
+## Versioning
 
+Zen follows Semantic Versioning.
+
+Examples:
+
+```
+1.0.0
+1.2.0
+2.0.1
+```
+
+---
+
+## License
+
+See the LICENSE file for licensing information.
