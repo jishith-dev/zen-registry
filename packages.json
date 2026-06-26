@@ -1,8 +1,8 @@
 {
-  "banking-test": {
-  "author": "Jishith-dev",
-  "repo": "https://github.com/Jishith-dev/banking-test",
-  "description": "Test banking package",
-  "latest": "1.0.0"
+   "test-pkg": {
+    "author": "jishith-dev",
+    "repo": "https://github.com/jishith-dev/zen-test-pkg",
+    "description": "Test package",
+    "latest": "1.0.0"
   }
 }
