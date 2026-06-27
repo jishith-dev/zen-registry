@@ -1,9 +1,9 @@
-
 import express from "express";
 
 import publishRoute from "./routes/publish.js";
 import unPublishRoute from "./routes/unpublish.js";
 import registryRoute from "./routes/registry.js";
+import listRoute from "./routes/list.js";
 import signupRoute from "./routes/signup.js";
 import loginRoute from "./routes/login.js";
 
@@ -22,6 +22,7 @@ app.post("/api/login", loginRoute);
 
 // Registry
 app.get("/api/packages.json", registryRoute);
+app.get("/api/list", listRoute);
 
 // Package management
 app.post("/api/publish", publishRoute);

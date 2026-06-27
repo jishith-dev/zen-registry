@@ -5,10 +5,15 @@ import jwt from "jsonwebtoken";
 
 const AUTH_FILE = path.join(process.cwd(), "auth.json");
 
+
 function loadUsers() {
-  return fs.existsSync(AUTH_FILE)
-    ? JSON.parse(fs.readFileSync(AUTH_FILE, "utf8"))
-    : {};
+  if (!fs.existsSync(AUTH_FILE)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(AUTH_FILE, "utf8"));
+  } catch {
+    console.error("auth.json corrupted");
+    return {};
+  }
 }
 
 export default async function loginRoute(req, res) {
@@ -20,6 +25,10 @@ export default async function loginRoute(req, res) {
       return res.status(400).json({
         error: "username and password required"
       });
+    }
+    
+    if (!username?.trim() || !password || username.length > 255 || password.length > 1024) {
+      return res.status(400).json({ error: "invalid input" });
     }
 
     const users = loadUsers();

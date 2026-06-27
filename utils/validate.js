@@ -23,6 +23,14 @@ export function validatePublish(metadata) {
   if (metadata.main && metadata.bin) {
     return { valid: false, error: "zen.json cannot have both 'main' and 'bin'" };
   }
+  
+  if (metadata.description.length > 50) {
+    return { valid: false, error: "description should be less than 50 charectors" };
+  }
+  
+  if (!/^[a-z0-9_-]+$/.test(metadata.name) || metadata.name.length > 100) {
+  return res.status(400).json({ error: "Invalid package name" });
+}
 
   if (!/^\d+\.\d+\.\d+$/.test(version)) {
     return { valid: false, error: "version must be semver (1.0.0)" };

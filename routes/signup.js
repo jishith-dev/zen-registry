@@ -6,9 +6,13 @@ const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@
 const AUTH_FILE = path.join(process.cwd(), "auth.json");
 
 function loadUsers() {
-  return fs.existsSync(AUTH_FILE)
-    ? JSON.parse(fs.readFileSync(AUTH_FILE, "utf8"))
-    : {};
+  if (!fs.existsSync(AUTH_FILE)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(AUTH_FILE, "utf8"));
+  } catch {
+    console.error("auth.json corrupted");
+    return {};
+  }
 }
 
 function saveUsers(users) {

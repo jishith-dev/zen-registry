@@ -6,9 +6,13 @@ import { validatePublish } from "../utils/validate.js";
 const PACKAGES_FILE = path.join(process.cwd(), "packages.json");
 
 function loadPackages() {
-  return fs.existsSync(PACKAGES_FILE)
-    ? JSON.parse(fs.readFileSync(PACKAGES_FILE, "utf8"))
-    : {};
+  if (!fs.existsSync(PACKAGES_FILE)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(PACKAGES_FILE, "utf8"));
+  } catch {
+    console.error("packages.json corrupted");
+    return {};
+  }
 }
 
 function savePackages(packages) {
@@ -31,7 +35,7 @@ export default function publishRoute(req, res) {
       decoded = jwt.verify(token, JWT_SECRET);
     } catch (err) {
       return res.status(401).json({
-        error: "Invalid or expired token"
+        error: "Invalid or expired token. Please login again"
       });
     }
 
@@ -60,12 +64,12 @@ export default function publishRoute(req, res) {
           error: "You do not own this package"
         });
       }
+      
 
-      if (metadata.version <= existing.latest) {
-        return res.status(400).json({
-          error: "Version must be higher than the latest version"
-        });
-      }
+const semver = (v) => v.split(".").map(Number);
+if (semver(metadata.version) <= semver(existing.latest)) {
+  return res.status(400).json({ error: "Version must be higher than the latest version" });
+}
 
       existing.repo = metadata.repo;
       existing.description = metadata.description || "";
