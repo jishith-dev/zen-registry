@@ -51,7 +51,7 @@ Create a new application:
 zen init myapp
 ```
 
-Example `zen.json`:
+Example `zen.json` for library:
 
 ```json
 {
@@ -64,10 +64,15 @@ Example `zen.json`:
 }
 ```
 
-For applications, replace `bin` with:
+Example `zen.json` for application:
 
 ```json
 {
+  "name": "myapp",
+  "version": "1.0.0",
+  "author": "your-github-username",
+  "repo": "https://github.com/your-github-username/myapp",
+  "description": "Example application",
   "main": "main.zen"
 }
 ```
@@ -88,6 +93,12 @@ Login:
 zen login
 ```
 
+Check login status:
+
+```bash
+zen whoami
+```
+
 Logout:
 
 ```bash
@@ -104,7 +115,7 @@ Authentication is stored locally in:
 
 ## Publishing
 
-Publish a package:
+Publish a package from its directory:
 
 ```bash
 zen publish
@@ -113,21 +124,34 @@ zen publish
 Requirements:
 
 - Logged in with `zen login`
-- Valid `zen.json`
+- Valid `zen.json` in current directory
 - Public GitHub repository
 - Unique package name
+- Version higher than previous release
 
 ---
 
 ## Unpublishing
 
-Remove one of your published packages:
+Navigate to your package directory and remove it:
 
 ```bash
-zen unpublish mypackage
+zen unpublish
 ```
 
-Only the package owner can unpublish a package.
+This unpublishes the package defined in your `zen.json`. Only the package owner can unpublish.
+
+---
+
+## Browsing Packages
+
+List all available packages:
+
+```bash
+zen list
+```
+
+Browse through packages with pagination (50 per page). Press `y` to see the next batch.
 
 ---
 
@@ -150,7 +174,7 @@ Each package is stored in the registry as:
 
 ## Versioning
 
-Zen follows Semantic Versioning.
+Zen follows Semantic Versioning (`major.minor.patch`).
 
 Examples:
 
@@ -159,6 +183,26 @@ Examples:
 1.2.0
 2.0.1
 ```
+
+Each new publish must have a version higher than the latest.
+
+---
+
+> **Important: No Version History**
+> 
+> The registry currently stores only the latest version of each package.
+> 
+> Publishing a new version overwrites the previous one.
+> 
+> Old versions are not retained or accessible.
+> 
+> Keep releases in your GitHub repository for historical reference.
+
+---
+
+## Contributing
+
+For guidelines on publishing and package standards, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ---
 
