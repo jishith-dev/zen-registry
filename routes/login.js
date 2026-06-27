@@ -1,11 +1,19 @@
-// routes/login.js
-
 import fs from "fs";
 import path from "path";
-import crypto from "crypto";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
-export default function loginRoute(req, res) {
+const AUTH_FILE = path.join(process.cwd(), "auth.json");
+
+function loadUsers() {
+  return fs.existsSync(AUTH_FILE)
+    ? JSON.parse(fs.readFileSync(AUTH_FILE, "utf8"))
+    : {};
+}
+
+export default async function loginRoute(req, res) {
   try {
+    const JWT_SECRET = process.env.JWT_SECRET;
     const { username, password } = req.body;
 
     if (!username || !password) {
@@ -14,15 +22,7 @@ export default function loginRoute(req, res) {
       });
     }
 
-    const authPath = path.join(process.cwd(), "auth.json");
-
-    if (!fs.existsSync(authPath)) {
-      return res.status(401).json({
-        error: "invalid username or password"
-      });
-    }
-
-    const users = JSON.parse(fs.readFileSync(authPath, "utf8"));
+    const users = loadUsers();
     const user = users[username];
 
     if (!user) {
@@ -31,25 +31,21 @@ export default function loginRoute(req, res) {
       });
     }
 
-    const passwordHash = crypto
-      .createHash("sha256")
-      .update(password)
-      .digest("hex");
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
 
-    if (user.password !== passwordHash) {
+    if (!isValidPassword) {
       return res.status(401).json({
         error: "invalid username or password"
       });
     }
 
-    const token = crypto.randomBytes(32).toString("hex");
-
-    user.token = token;
-
-    fs.writeFileSync(authPath, JSON.stringify(users, null, 2));
+    const token = jwt.sign(
+      { username },
+      JWT_SECRET,
+      { expiresIn: "90d" }
+    );
 
     res.json({
-      success: true,
       message: "Login successful",
       token
     });

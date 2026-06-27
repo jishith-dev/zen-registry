@@ -1,15 +1,17 @@
-// routes/registry.js
-
 import fs from "fs";
 import path from "path";
 
+const PACKAGES_FILE = path.join(process.cwd(), "packages.json");
+
+function loadPackages() {
+  return fs.existsSync(PACKAGES_FILE)
+    ? JSON.parse(fs.readFileSync(PACKAGES_FILE, "utf8"))
+    : {};
+}
+
 export default function registryRoute(req, res) {
   try {
-    const packagesPath = path.join(process.cwd(), "packages.json");
-    const packages = JSON.parse(
-      fs.readFileSync(packagesPath, "utf8")
-    );
-
+    const packages = loadPackages();
     const packageName = req.query.name;
 
     if (!packageName) {

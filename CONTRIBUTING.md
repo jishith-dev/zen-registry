@@ -12,6 +12,8 @@ Create an account:
 zen signup
 ```
 
+Password must be at least 8 characters with uppercase, lowercase, number, and special character (@$!%*?&).
+
 Login:
 
 ```bash
@@ -45,7 +47,7 @@ Every package must:
 - Include a meaningful description
 - Contain working Zen source code
 
-Example:
+Example `zen.json`:
 
 ```json
 {

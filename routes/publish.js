@@ -1,11 +1,23 @@
-// routes/publish.js
-
 import fs from "fs";
 import path from "path";
+import jwt from "jsonwebtoken";
 import { validatePublish } from "../utils/validate.js";
+
+const PACKAGES_FILE = path.join(process.cwd(), "packages.json");
+
+function loadPackages() {
+  return fs.existsSync(PACKAGES_FILE)
+    ? JSON.parse(fs.readFileSync(PACKAGES_FILE, "utf8"))
+    : {};
+}
+
+function savePackages(packages) {
+  fs.writeFileSync(PACKAGES_FILE, JSON.stringify(packages, null, 2));
+}
 
 export default function publishRoute(req, res) {
   try {
+    const JWT_SECRET = process.env.JWT_SECRET;
     const token = req.headers.authorization?.replace("Bearer ", "");
 
     if (!token) {
@@ -14,19 +26,16 @@ export default function publishRoute(req, res) {
       });
     }
 
-    const authPath = path.join(process.cwd(), "auth.json");
-    const users = JSON.parse(fs.readFileSync(authPath, "utf8"));
-
-    const username = Object.keys(users).find(
-      user => users[user].token === token
-    );
-
-    if (!username) {
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
       return res.status(401).json({
-        error: "Invalid token"
+        error: "Invalid or expired token"
       });
     }
 
+    const username = decoded.username;
     const metadata = req.body;
 
     const validation = validatePublish(metadata);
@@ -42,9 +51,7 @@ export default function publishRoute(req, res) {
       });
     }
 
-    const packagesPath = path.join(process.cwd(), "packages.json");
-    const packages = JSON.parse(fs.readFileSync(packagesPath, "utf8"));
-
+    const packages = loadPackages();
     const existing = packages[metadata.name];
 
     if (existing) {
@@ -64,10 +71,9 @@ export default function publishRoute(req, res) {
       existing.description = metadata.description || "";
       existing.latest = metadata.version;
 
-      fs.writeFileSync(packagesPath, JSON.stringify(packages, null, 2));
+      savePackages(packages);
 
       return res.json({
-        success: true,
         message: `Updated ${metadata.name} to v${metadata.version}`
       });
     }
@@ -79,10 +85,9 @@ export default function publishRoute(req, res) {
       latest: metadata.version
     };
 
-    fs.writeFileSync(packagesPath, JSON.stringify(packages, null, 2));
+    savePackages(packages);
 
     res.json({
-      success: true,
       message: `Published ${metadata.name} v${metadata.version}`
     });
 
