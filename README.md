@@ -112,6 +112,27 @@ Authentication is stored locally in:
 ```
 
 ---
+## Account Recovery
+
+When you create an account with zen signup, you receive recovery codes. Save these codes in a safe place. They cannot be retrieved later.
+
+Each recovery code can be used once to reset your password if you forget it.
+
+Recover your account:
+
+    zen recovery
+
+You will be prompted for:
+
+- Username
+- Recovery code (from the list you saved during signup)  
+- New password (must meet password requirements)
+
+If you use a recovery code, it becomes invalid and cannot be used again. You will have 7 remaining codes.
+
+Recovery codes are 8 hexadecimal characters, for example: a1b2c3d4
+
+--- 
 
 ## Publishing
 

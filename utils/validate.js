@@ -24,8 +24,8 @@ export function validatePublish(metadata) {
     return { valid: false, error: "zen.json cannot have both 'main' and 'bin'" };
   }
   
-  if (metadata.description.length > 50) {
-    return { valid: false, error: "description should be less than 50 charectors" };
+  if (metadata.description.length > 400) {
+    return { valid: false, error: "description should be less than 400 charecters" };
   }
   
   if (!/^[a-z0-9_-]+$/.test(metadata.name) || metadata.name.length > 100) {

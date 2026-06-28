@@ -6,6 +6,7 @@ import registryRoute from "./routes/registry.js";
 import listRoute from "./routes/list.js";
 import signupRoute from "./routes/signup.js";
 import loginRoute from "./routes/login.js";
+import recoveryRoute from "./routes/recovery.js";
 
 const app = express();
 
@@ -27,6 +28,9 @@ app.get("/api/list", listRoute);
 // Package management
 app.post("/api/publish", publishRoute);
 app.delete("/api/unpublish", unPublishRoute);
+
+// Recovery route
+app.post("/api/recovery", recoveryRoute);
 
 // Error handler
 app.use((err, req, res, next) => {

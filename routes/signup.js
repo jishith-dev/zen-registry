@@ -1,6 +1,22 @@
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
+
+function generateRecoveryCodes(count = 8) {
+  return Array.from({ length: count }, () =>
+    crypto.randomBytes(4).toString("hex")
+  );
+}
+
+async function hashCodes(codes) {
+  return Promise.all(
+    codes.map(async (code) => ({
+      hash: await bcrypt.hash(code, 10),
+      used: false
+    }))
+  );
+}
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 const AUTH_FILE = path.join(process.cwd(), "auth.json");
@@ -44,15 +60,20 @@ export default async function signupRoute(req, res) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    
+    const rawCodes = generateRecoveryCodes();
+    const recoveryCodes = await hashCodes(rawCodes);
 
     users[username] = {
-      passwordHash
+      passwordHash,
+      recoveryCodes
     };
 
     saveUsers(users);
 
     res.json({
-      message: "Account created successfully"
+      message: "Account created successfully",
+      codes: rawCodes
     });
   } catch (err) {
     res.status(500).json({

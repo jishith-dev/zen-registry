@@ -40,6 +40,15 @@ zen logout
 
 Removes your local token.
 
+### recovery
+
+```bash
+zen recovery
+```
+
+update your password
+
+---
 ---
 
 ## Publishing Packages
@@ -189,6 +198,7 @@ zen signup              # Create account
 zen login              # Login
 zen whoami             # Check logged-in user
 zen logout             # Logout
+zen recovery           # recover forgotten password
 
 # Package management
 zen publish            # Publish/update package
