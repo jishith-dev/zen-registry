@@ -52,11 +52,12 @@ export default async function recoveryRoute(req, res) {
     codes[codeIndex].used = true;
     const newPasswordHash = await bcrypt.hash(newPassword, 10);
 
+    
     await sql`
-      UPDATE users 
-      SET password_hash = ${newPasswordHash}, recovery_codes = ${JSON.stringify(codes)}
-      WHERE username = ${username}
-    `;
+  UPDATE users 
+  SET password_hash = ${newPasswordHash}, recovery_codes = ${codes}
+  WHERE username = ${username}
+`;
 
     res.json({
       message: "Password reset successfully"
