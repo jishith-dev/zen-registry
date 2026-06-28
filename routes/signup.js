@@ -47,10 +47,11 @@ export default async function signupRoute(req, res) {
     const rawCodes = generateRecoveryCodes();
     const recoveryCodes = await hashCodes(rawCodes);
 
-    await sql`
-      INSERT INTO users (username, password_hash, recovery_codes)
-      VALUES (${username}, ${passwordHash}, ${JSON.stringify(recoveryCodes)})
-    `;
+    // Correct:
+await sql`
+  INSERT INTO users (username, password_hash, recovery_codes)
+  VALUES (${username}, ${passwordHash}, ${recoveryCodes})
+`;
 
     res.json({
       message: "Account created successfully",
