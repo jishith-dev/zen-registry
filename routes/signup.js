@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { sql } from "../db.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
@@ -19,21 +18,6 @@ async function hashCodes(codes) {
 }
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-const AUTH_FILE = path.join(process.cwd(), "auth.json");
-
-function loadUsers() {
-  if (!fs.existsSync(AUTH_FILE)) return {};
-  try {
-    return JSON.parse(fs.readFileSync(AUTH_FILE, "utf8"));
-  } catch {
-    console.error("auth.json corrupted");
-    return {};
-  }
-}
-
-function saveUsers(users) {
-  fs.writeFileSync(AUTH_FILE, JSON.stringify(users, null, 2));
-}
 
 export default async function signupRoute(req, res) {
   try {
@@ -51,25 +35,22 @@ export default async function signupRoute(req, res) {
       });
     }
 
-    const users = loadUsers();
+    const existing = await sql`SELECT 1 FROM users WHERE username = ${username}`;
 
-    if (users[username]) {
+    if (existing.length > 0) {
       return res.status(400).json({
         error: "username already exists"
       });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    
     const rawCodes = generateRecoveryCodes();
     const recoveryCodes = await hashCodes(rawCodes);
 
-    users[username] = {
-      passwordHash,
-      recoveryCodes
-    };
-
-    saveUsers(users);
+    await sql`
+      INSERT INTO users (username, password_hash, recovery_codes)
+      VALUES (${username}, ${passwordHash}, ${JSON.stringify(recoveryCodes)})
+    `;
 
     res.json({
       message: "Account created successfully",

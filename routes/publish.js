@@ -1,25 +1,8 @@
-import fs from "fs";
-import path from "path";
 import jwt from "jsonwebtoken";
+import { sql } from "../db.js";
 import { validatePublish } from "../utils/validate.js";
 
-const PACKAGES_FILE = path.join(process.cwd(), "packages.json");
-
-function loadPackages() {
-  if (!fs.existsSync(PACKAGES_FILE)) return {};
-  try {
-    return JSON.parse(fs.readFileSync(PACKAGES_FILE, "utf8"));
-  } catch {
-    console.error("packages.json corrupted");
-    return {};
-  }
-}
-
-function savePackages(packages) {
-  fs.writeFileSync(PACKAGES_FILE, JSON.stringify(packages, null, 2));
-}
-
-export default function publishRoute(req, res) {
+export default async function publishRoute(req, res) {
   try {
     const JWT_SECRET = process.env.JWT_SECRET;
     const token = req.headers.authorization?.replace("Bearer ", "");
@@ -55,41 +38,41 @@ export default function publishRoute(req, res) {
       });
     }
 
-    const packages = loadPackages();
-    const existing = packages[metadata.name];
+    const existing = await sql`SELECT * FROM packages WHERE name = ${metadata.name}`;
 
-    if (existing) {
-      if (existing.author !== username) {
+    if (existing.length > 0) {
+      const pkg = existing[0];
+      
+      if (pkg.author !== username) {
         return res.status(403).json({
           error: "You do not own this package"
         });
       }
-      
 
-const semver = (v) => v.split(".").map(Number);
-if (semver(metadata.version) <= semver(existing.latest)) {
-  return res.status(400).json({ error: "Version must be higher than the latest version" });
-}
+      const semver = (v) => v.split(".").map(Number);
+      if (semver(metadata.version) <= semver(pkg.latest)) {
+        return res.status(400).json({ 
+          error: "Version must be higher than the latest version" 
+        });
+      }
 
-      existing.repo = metadata.repo;
-      existing.description = metadata.description || "";
-      existing.latest = metadata.version;
-
-      savePackages(packages);
+      await sql`
+        UPDATE packages 
+        SET repo = ${metadata.repo}, 
+            description = ${metadata.description || ""}, 
+            latest = ${metadata.version}
+        WHERE name = ${metadata.name}
+      `;
 
       return res.json({
         message: `Updated ${metadata.name} to v${metadata.version}`
       });
     }
 
-    packages[metadata.name] = {
-      author: metadata.author,
-      repo: metadata.repo,
-      description: metadata.description || "",
-      latest: metadata.version
-    };
-
-    savePackages(packages);
+    await sql`
+      INSERT INTO packages (name, author, repo, description, latest)
+      VALUES (${metadata.name}, ${metadata.author}, ${metadata.repo}, ${metadata.description || ""}, ${metadata.version})
+    `;
 
     res.json({
       message: `Published ${metadata.name} v${metadata.version}`

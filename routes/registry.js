@@ -1,32 +1,20 @@
-import fs from "fs";
-import path from "path";
+import { sql } from "../db.js";
 
-const PACKAGES_FILE = path.join(process.cwd(), "packages.json");
-
-function loadPackages() {
-  if (!fs.existsSync(PACKAGES_FILE)) return {};
+export default async function registryRoute(req, res) {
   try {
-    return JSON.parse(fs.readFileSync(PACKAGES_FILE, "utf8"));
-  } catch {
-    console.error("packages.json corrupted");
-    return {};
-  }
-}
-
-export default function registryRoute(req, res) {
-  try {
-    const packages = loadPackages();
     const packageName = req.query.name;
 
     if (!packageName) {
-      return res.json(packages);
+      const all = await sql`SELECT name, author, description, latest, repo FROM packages ORDER BY created_at DESC`;
+      return res.json(all);
     }
     
-    if (packageName && (!/^[a-z0-9_-]+$/.test(packageName) || packageName.length > 100)) {
-  return res.status(400).json({ error: "Invalid package name" });
-}
+    if (!/^[a-z0-9_-]+$/.test(packageName) || packageName.length > 100) {
+      return res.status(400).json({ error: "Invalid package name" });
+    }
 
-    const pkg = packages[packageName];
+    const rows = await sql`SELECT * FROM packages WHERE name = ${packageName}`;
+    const pkg = rows[0];
 
     if (!pkg) {
       return res.status(404).json({
@@ -37,7 +25,7 @@ export default function registryRoute(req, res) {
     res.json(pkg);
   } catch (err) {
     res.status(500).json({
-      error: "registry error :" + err.message
+      error: "registry error: " + err.message
     });
   }
 }

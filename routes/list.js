@@ -1,34 +1,23 @@
-import fs from "fs";
-import path from "path";
+import { sql } from "../db.js";
 
-const PACKAGES_FILE = path.join(process.cwd(), "packages.json");
-
-function loadPackages() {
-  if (!fs.existsSync(PACKAGES_FILE)) return {};
+export default async function listRoute(req, res) {
   try {
-    return JSON.parse(fs.readFileSync(PACKAGES_FILE, "utf8"));
-  } catch {
-    console.error("packages.json corrupted");
-    return {};
-  }
-}
-
-export default function listRoute(req, res) {
-  try {
-    const packages = loadPackages();
-    const list = Object.entries(packages).map(([name, data]) => ({
-      name,
-      author: data.author,
-      description: data.description,
-      latest: data.latest,
-      repo: data.repo
-    }));
-
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = 50;
     const offset = (page - 1) * limit;
-    const total = list.length;
-    const paged = list.slice(offset, offset + limit);
+
+    // Get total count
+    const countResult = await sql`SELECT COUNT(*) as count FROM packages`;
+    const total = countResult[0].count;
+
+    // Get paginated packages
+    const packages = await sql`
+      SELECT name, author, description, latest, repo 
+      FROM packages 
+      ORDER BY created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+
     const hasMore = offset + limit < total;
 
     res.json({
@@ -36,8 +25,8 @@ export default function listRoute(req, res) {
       limit,
       total,
       hasMore,
-      count: paged.length,
-      packages: paged
+      count: packages.length,
+      packages
     });
   } catch (err) {
     console.error("List error:", err);

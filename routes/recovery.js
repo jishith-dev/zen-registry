@@ -1,23 +1,7 @@
-import fs from "fs";
-import path from "path";
+import { sql } from "../db.js";
 import bcrypt from "bcryptjs";
 
-const AUTH_FILE = path.join(process.cwd(), "auth.json");
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
-function loadUsers() {
-  if (!fs.existsSync(AUTH_FILE)) return {};
-  try {
-    return JSON.parse(fs.readFileSync(AUTH_FILE, "utf8"));
-  } catch {
-    console.error("auth.json corrupted");
-    return {};
-  }
-}
-
-function saveUsers(users) {
-  fs.writeFileSync(AUTH_FILE, JSON.stringify(users, null, 2));
-}
 
 export default async function recoveryRoute(req, res) {
   try {
@@ -35,8 +19,8 @@ export default async function recoveryRoute(req, res) {
       });
     }
 
-    const users = loadUsers();
-    const user = users[username];
+    const rows = await sql`SELECT * FROM users WHERE username = ${username}`;
+    const user = rows[0];
 
     if (!user) {
       return res.status(401).json({
@@ -46,10 +30,11 @@ export default async function recoveryRoute(req, res) {
 
     let validCode = false;
     let codeIndex = -1;
+    const codes = user.recovery_codes;
 
-    for (let i = 0; i < user.recoveryCodes.length; i++) {
-      if (!user.recoveryCodes[i].used) {
-        const match = await bcrypt.compare(recoveryCode, user.recoveryCodes[i].hash);
+    for (let i = 0; i < codes.length; i++) {
+      if (!codes[i].used) {
+        const match = await bcrypt.compare(recoveryCode, codes[i].hash);
         if (match) {
           validCode = true;
           codeIndex = i;
@@ -64,10 +49,14 @@ export default async function recoveryRoute(req, res) {
       });
     }
 
-    user.passwordHash = await bcrypt.hash(newPassword, 10);
-    user.recoveryCodes[codeIndex].used = true;
+    codes[codeIndex].used = true;
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
 
-    saveUsers(users);
+    await sql`
+      UPDATE users 
+      SET password_hash = ${newPasswordHash}, recovery_codes = ${JSON.stringify(codes)}
+      WHERE username = ${username}
+    `;
 
     res.json({
       message: "Password reset successfully"

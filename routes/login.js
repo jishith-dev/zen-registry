@@ -1,20 +1,6 @@
-import fs from "fs";
-import path from "path";
+import { sql } from "../db.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-
-const AUTH_FILE = path.join(process.cwd(), "auth.json");
-
-
-function loadUsers() {
-  if (!fs.existsSync(AUTH_FILE)) return {};
-  try {
-    return JSON.parse(fs.readFileSync(AUTH_FILE, "utf8"));
-  } catch {
-    console.error("auth.json corrupted");
-    return {};
-  }
-}
 
 export default async function loginRoute(req, res) {
   try {
@@ -31,8 +17,8 @@ export default async function loginRoute(req, res) {
       return res.status(400).json({ error: "invalid input" });
     }
 
-    const users = loadUsers();
-    const user = users[username];
+    const rows = await sql`SELECT * FROM users WHERE username = ${username}`;
+    const user = rows[0];
 
     if (!user) {
       return res.status(401).json({
@@ -40,7 +26,7 @@ export default async function loginRoute(req, res) {
       });
     }
 
-    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
     if (!isValidPassword) {
       return res.status(401).json({

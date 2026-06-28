@@ -1,20 +1,7 @@
-import fs from "fs";
-import path from "path";
 import jwt from "jsonwebtoken";
+import { sql } from "../db.js";
 
-const PACKAGES_FILE = path.join(process.cwd(), "packages.json");
-
-function loadPackages() {
-  return fs.existsSync(PACKAGES_FILE)
-    ? JSON.parse(fs.readFileSync(PACKAGES_FILE, "utf8"))
-    : {};
-}
-
-function savePackages(packages) {
-  fs.writeFileSync(PACKAGES_FILE, JSON.stringify(packages, null, 2));
-}
-
-export default function unpublishRoute(req, res) {
+export default async function unpublishRoute(req, res) {
   try {
     const JWT_SECRET = process.env.JWT_SECRET;
     const token = req.headers.authorization?.replace("Bearer ", "");
@@ -43,8 +30,8 @@ export default function unpublishRoute(req, res) {
       });
     }
 
-    const packages = loadPackages();
-    const pkg = packages[name];
+    const rows = await sql`SELECT * FROM packages WHERE name = ${name}`;
+    const pkg = rows[0];
 
     if (!pkg) {
       return res.status(404).json({
@@ -58,8 +45,7 @@ export default function unpublishRoute(req, res) {
       });
     }
 
-    delete packages[name];
-    savePackages(packages);
+    await sql`DELETE FROM packages WHERE name = ${name}`;
 
     res.json({
       message: `Unpublished ${name}`

@@ -178,16 +178,15 @@ Browse through packages with pagination (50 per page). Press `y` to see the next
 
 ## Package Metadata
 
-Each package is stored in the registry as:
+Each package in the registry has this metadata:
 
 ```json
 {
-  "mypackage": {
-    "author": "your-github-username",
-    "repo": "https://github.com/your-github-username/mypackage",
-    "description": "Example package",
-    "latest": "1.0.0"
-  }
+  "name": "mypackage",
+  "author": "your-github-username",
+  "repo": "https://github.com/your-github-username/mypackage",
+  "description": "Example package",
+  "latest": "1.0.0"
 }
 ```
 
