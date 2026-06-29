@@ -29,7 +29,7 @@ export function validatePublish(metadata) {
   }
   
   if (!/^[a-z0-9_-]+$/.test(metadata.name) || metadata.name.length > 100) {
-  return res.status(400).json({ error: "Invalid package name" });
+  return { valid: false, error: "Invalid package name" };
 }
 
   if (!/^\d+\.\d+\.\d+$/.test(version)) {
