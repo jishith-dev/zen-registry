@@ -13,6 +13,8 @@ import searchRoute from "./routes/search.js";
 import kindRoute from "./routes/kind.js";
 import mineRoute from "./routes/mine.js";
 
+const PORT = process.env.PORT || 3000;
+
 const app = express();
 
 app.use(express.json());
@@ -48,6 +50,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(3000, () => {
+app.listen(PORT, () => {
   console.log("Server running on :3000");
 });
