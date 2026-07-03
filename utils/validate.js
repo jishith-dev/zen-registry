@@ -33,7 +33,10 @@ export function validatePublish(metadata) {
 }
 
 if (metadata.kind !== "main" || metadata.kind !== "lib") {
-  return {valid: false, error: "Kind must be 'main' or 'lib'";
+  return {
+  valid: false,
+  error: "Package must define exactly one of 'main' or 'bin'"
+};
 }
 
   if (!/^\d+\.\d+\.\d+$/.test(version)) {
