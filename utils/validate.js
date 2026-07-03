@@ -32,6 +32,10 @@ export function validatePublish(metadata) {
   return { valid: false, error: "Invalid package name" };
 }
 
+if (metadata.kind !== "main" || metadata.kind !== "lib") {
+  return {valid: false, error: "Kind must be 'main' or 'lib'";
+}
+
   if (!/^\d+\.\d+\.\d+$/.test(version)) {
     return { valid: false, error: "version must be semver (1.0.0)" };
   }

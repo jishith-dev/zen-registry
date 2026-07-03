@@ -147,6 +147,8 @@ Every package must:
 }
 ```
 
+description should less than 400 charecters.
+
 ---
 
 ## Package Ownership

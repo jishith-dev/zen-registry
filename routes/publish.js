@@ -58,10 +58,11 @@ export default async function publishRoute(req, res) {
 
       await sql`
         UPDATE packages 
-        SET repo = ${metadata.repo}, 
-            description = ${metadata.description || ""}, 
-            latest = ${metadata.version}
-        WHERE name = ${metadata.name}
+         SET repo = ${metadata.repo}, 
+             description = ${metadata.description || ""}, 
+            latest = ${metadata.version},
+            kind = ${metadata.kind}
+            WHERE name = ${metadata.name}
       `;
 
       return res.json({
@@ -70,8 +71,8 @@ export default async function publishRoute(req, res) {
     }
 
     await sql`
-      INSERT INTO packages (name, author, repo, description, latest)
-      VALUES (${metadata.name}, ${metadata.author}, ${metadata.repo}, ${metadata.description || ""}, ${metadata.version})
+      INSERT INTO packages (name, author, repo, description, latest, kind)
+      VALUES (${metadata.name}, ${metadata.author}, ${metadata.repo}, ${metadata.description || ""}, ${metadata.version}, ${metadata.kind})
     `;
 
     res.json({

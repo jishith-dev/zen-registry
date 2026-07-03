@@ -9,6 +9,9 @@ import listRoute from "./routes/list.js";
 import signupRoute from "./routes/signup.js";
 import loginRoute from "./routes/login.js";
 import recoveryRoute from "./routes/recovery.js";
+import searchRoute from "./routes/search.js";
+import kindRoute from "./routes/kind.js";
+import mineRoute from "./routes/mine.js";
 
 const app = express();
 
@@ -26,6 +29,9 @@ app.post("/api/login", loginRoute);
 // Registry
 app.get("/api/packages.json", registryRoute);
 app.get("/api/list", listRoute);
+app.get("/api/search", searchRoute);
+app.get("/api/kind", kindRoute);
+app.get("/api/mine", mineRoute);
 
 // Package management
 app.post("/api/publish", publishRoute);
