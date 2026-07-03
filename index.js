@@ -24,6 +24,11 @@ if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
   process.exit(1);
 }
 
+// check
+app.get("/", (req, res) => {
+  res.send("ZEN API WORKING");
+});
+
 // Authentication
 app.post("/api/signup", signupRoute);
 app.post("/api/login", loginRoute);
@@ -50,6 +55,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log("Server running on :3000");
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on ${PORT}`);
 });
