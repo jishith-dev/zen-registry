@@ -32,11 +32,11 @@ export function validatePublish(metadata) {
   return { valid: false, error: "Invalid package name" };
 }
 
-if (metadata.kind !== "main" || metadata.kind !== "lib") {
+if (metadata.kind !== "main" && metadata.kind !== "lib") {
   return {
-  valid: false,
-  error: "Package must define exactly one of 'main' or 'bin'"
-};
+    valid: false,
+    error: "Package must define exactly one of 'main' or 'bin'"
+  };
 }
 
   if (!/^\d+\.\d+\.\d+$/.test(version)) {
