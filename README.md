@@ -4,54 +4,58 @@ Official package registry for the Zen programming language.
 
 ## Features
 
-- Install packages from the Zen Registry
-- Publish packages directly from the CLI
-- Secure account-based authentication
+- Install and uninstall packages
+- Publish and update packages
+- Search and browse packages
+- Secure account authentication
 - GitHub-hosted package source
-- Package ownership verification
+- Automatic GitHub default branch detection
+- Library and application package support
 
 ---
 
-## Installation
+## CLI Commands
 
-Install a package:
-
-```bash
-zen install <package-name>
-```
-
-Example:
+### Package Management
 
 ```bash
-zen install banking
-zen install calculator
+zen install <package>
+zen uninstall <package>
+zen search <package>
+zen kind <package>
+zen mine
+zen list
+zen publish
+zen unpublish
 ```
 
-Library packages are installed to:
+### Authentication
 
-```text
-~/.zen/packages/
+```bash
+zen signup
+zen login
+zen whoami
+zen logout
+zen recovery
 ```
-
-Runnable applications are cloned into the current working directory.
 
 ---
 
 ## Creating a Package
 
-Create a new library:
+### Library
 
 ```bash
 zen init mypackage --bin
 ```
 
-Create a new application:
+### Application
 
 ```bash
 zen init myapp
 ```
 
-Example `zen.json` for library:
+### Library `zen.json`
 
 ```json
 {
@@ -64,7 +68,7 @@ Example `zen.json` for library:
 }
 ```
 
-Example `zen.json` for application:
+### Application `zen.json`
 
 ```json
 {
@@ -76,6 +80,85 @@ Example `zen.json` for application:
   "main": "main.zen"
 }
 ```
+
+---
+
+## Package Requirements
+
+Every package must:
+
+- Have a valid `zen.json`
+- Be hosted in a public GitHub repository
+- Use Semantic Versioning (`major.minor.patch`)
+- Have a unique package name
+- Provide a meaningful description (maximum 400 characters)
+- Use `main` for runnable applications
+- Use `bin` for library packages
+
+---
+
+## Installing Packages
+
+### Library Packages
+
+```bash
+zen install http
+```
+
+Installed to:
+
+```text
+~/.zen/packages/
+```
+
+Imported as:
+
+```zen
+import(get) from "http"
+```
+
+### Runnable Applications
+
+Runnable applications are cloned into the current working directory.
+
+Remove an installed package:
+
+```bash
+zen uninstall <package>
+```
+
+---
+
+## Publishing Packages
+
+Publish from the package directory:
+
+```bash
+zen publish
+```
+
+Requirements:
+
+- Logged in with `zen login`
+- Valid `zen.json`
+- Public GitHub repository
+- Unique package name
+- Version higher than the latest published version
+
+Updating a package only requires increasing the version and publishing again.
+
+---
+
+## Package Ownership
+
+Packages belong to the account that originally published them.
+
+Only the owner can:
+
+- Publish new versions
+- Unpublish the package
+- Update the repository URL
+- Update the package description
 
 ---
 
@@ -93,7 +176,7 @@ Login:
 zen login
 ```
 
-Check login status:
+Current account:
 
 ```bash
 zen whoami
@@ -112,73 +195,58 @@ Authentication is stored locally in:
 ```
 
 ---
+
 ## Account Recovery
 
-When you create an account with zen signup, you receive recovery codes. Save these codes in a safe place. They cannot be retrieved later.
+When creating an account with `zen signup`, you receive recovery codes.
 
-Each recovery code can be used once to reset your password if you forget it.
+Store these codes safely. They cannot be retrieved later.
 
 Recover your account:
 
-    zen recovery
+```bash
+zen recovery
+```
 
 You will be prompted for:
 
 - Username
-- Recovery code (from the list you saved during signup)  
-- New password (must meet password requirements)
+- Recovery code
+- New password
 
-If you use a recovery code, it becomes invalid and cannot be used again. You will have 7 remaining codes.
-
-Recovery codes are 8 hexadecimal characters, for example: a1b2c3d4
-
---- 
-
-## Publishing
-
-Publish a package from its directory:
-
-```bash
-zen publish
-```
-
-Requirements:
-
-- Logged in with `zen login`
-- Valid `zen.json` in current directory
-- Public GitHub repository
-- Unique package name
-- Version higher than previous release
-
----
-
-## Unpublishing
-
-Navigate to your package directory and remove it:
-
-```bash
-zen unpublish
-```
-
-This unpublishes the package defined in your `zen.json`. Only the package owner can unpublish.
+Each recovery code can only be used once.
 
 ---
 
 ## Browsing Packages
 
-List all available packages:
+Browse all packages:
 
 ```bash
 zen list
 ```
 
-Browse through packages with pagination (50 per page). Press `y` to see the next batch.
+Search packages:
+
+```bash
+zen search <package>
+```
+
+Show package type:
+
+```bash
+zen kind <package>
+```
+
+View packages published by your account:
+
+```bash
+zen mine
+```
 
 ---
 
 ## Package Metadata
-
-Each package in the registry has this metadata:
 
 ```json
 {
@@ -198,34 +266,37 @@ Zen follows Semantic Versioning (`major.minor.patch`).
 
 Examples:
 
-```
+```text
 1.0.0
 1.2.0
 2.0.1
 ```
 
-Each new publish must have a version higher than the latest.
+Each publish must use a version greater than the currently published version.
 
 ---
 
-> **Important: No Version History**
-> 
-> The registry currently stores only the latest version of each package.
-> 
-> Publishing a new version overwrites the previous one.
-> 
-> Old versions are not retained or accessible.
-> 
-> Keep releases in your GitHub repository for historical reference.
+## Important Notes
+
+- The registry stores only the latest published version.
+- Publishing a new version replaces the previous registry entry.
+- Previous releases should be preserved in your GitHub repository.
+- `zen install` automatically clones the repository's default Git branch.
+- Library packages are imported by package name without the `.zen` extension.
 
 ---
 
-## Contributing
+## Reporting Issues
 
-For guidelines on publishing and package standards, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+Please open an issue in the Zen Registry repository with:
+
+- Clear description
+- Steps to reproduce
+- Expected and actual behavior
+- Environment information
 
 ---
 
 ## License
 
-See the LICENSE file for licensing information.
+See the LICENSE file.
