@@ -14,6 +14,7 @@ export default async function publishRoute(req, res) {
     }
 
     let decoded;
+
     try {
       decoded = jwt.verify(token, JWT_SECRET);
     } catch (err) {
@@ -26,6 +27,7 @@ export default async function publishRoute(req, res) {
     const metadata = req.body;
 
     const validation = validatePublish(metadata);
+
     if (!validation.valid) {
       return res.status(400).json({
         error: validation.error
@@ -38,41 +40,87 @@ export default async function publishRoute(req, res) {
       });
     }
 
-    const existing = await sql`SELECT * FROM packages WHERE name = ${metadata.name}`;
+    const existing = await sql`
+      SELECT * FROM packages
+      WHERE name = ${metadata.name}
+    `;
 
+    /*
+     * Existing package
+     */
     if (existing.length > 0) {
       const pkg = existing[0];
-      
+
       if (pkg.author !== username) {
         return res.status(403).json({
           error: "You do not own this package"
         });
       }
 
-      const semver = (v) => v.split(".").map(Number);
-      if (semver(metadata.version) <= semver(pkg.latest)) {
-        return res.status(400).json({ 
-          error: "Version must be higher than the latest version" 
+      // Check if this exact version already exists
+      const existingVersion = await sql`
+        SELECT id
+        FROM package_versions
+        WHERE package_id = ${pkg.id}
+          AND version = ${metadata.version}
+      `;
+
+      if (existingVersion.length > 0) {
+        return res.status(400).json({
+          error: `${metadata.name}@${metadata.version} already exists`
         });
       }
 
+      // Save the new version
       await sql`
-        UPDATE packages 
-         SET repo = ${metadata.repo}, 
-             description = ${metadata.description || ""}, 
+        INSERT INTO package_versions
+          (package_id, version, repo)
+        VALUES
+          (${pkg.id}, ${metadata.version}, ${metadata.repo})
+      `;
+
+      // Update latest package information
+      await sql`
+        UPDATE packages
+        SET repo = ${metadata.repo},
+            description = ${metadata.description || ""},
             latest = ${metadata.version},
             kind = ${metadata.kind}
-            WHERE name = ${metadata.name}
+        WHERE name = ${metadata.name}
       `;
 
       return res.json({
-        message: `Updated ${metadata.name} to v${metadata.version}`
+        message: `Published ${metadata.name} v${metadata.version}`
       });
     }
 
+    /*
+     * New package
+     */
+
+    const inserted = await sql`
+      INSERT INTO packages
+        (name, author, repo, description, latest, kind)
+      VALUES
+        (
+          ${metadata.name},
+          ${metadata.author},
+          ${metadata.repo},
+          ${metadata.description || ""},
+          ${metadata.version},
+          ${metadata.kind}
+        )
+      RETURNING id
+    `;
+
+    const packageId = inserted[0].id;
+
+    // Save the first version
     await sql`
-      INSERT INTO packages (name, author, repo, description, latest, kind)
-      VALUES (${metadata.name}, ${metadata.author}, ${metadata.repo}, ${metadata.description || ""}, ${metadata.version}, ${metadata.kind})
+      INSERT INTO package_versions
+        (package_id, version, repo)
+      VALUES
+        (${packageId}, ${metadata.version}, ${metadata.repo})
     `;
 
     res.json({
