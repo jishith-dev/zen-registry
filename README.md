@@ -6,9 +6,14 @@ Official package registry for the Zen programming language.
 
 - Install and uninstall packages
 - Publish and update packages
+- Semantic versioning
+- Install specific package versions
+- Recursive dependency installation
+- Automatic dependency detection with `zen deps`
 - Search and browse packages
 - Secure account authentication
 - GitHub-hosted package source
+- GitHub tag-based releases
 - Automatic GitHub default branch detection
 - Library and application package support
 
@@ -20,6 +25,7 @@ Official package registry for the Zen programming language.
 
 ```bash
 zen install <package>
+zen install <package>@<version>
 zen uninstall <package>
 zen search <package>
 zen kind <package>
@@ -27,6 +33,7 @@ zen mine
 zen list
 zen publish
 zen unpublish
+zen deps
 ```
 
 ### Authentication
@@ -55,7 +62,9 @@ zen init mypackage --bin
 zen init myapp
 ```
 
-### Library `zen.json`
+---
+
+## Library `zen.json`
 
 ```json
 {
@@ -64,11 +73,12 @@ zen init myapp
   "author": "your-github-username",
   "repo": "https://github.com/your-github-username/mypackage",
   "description": "Example package",
-  "bin": "lib.zen"
+  "bin": "lib.zen",
+  "dependencies": {}
 }
 ```
 
-### Application `zen.json`
+## Application `zen.json`
 
 ```json
 {
@@ -77,7 +87,8 @@ zen init myapp
   "author": "your-github-username",
   "repo": "https://github.com/your-github-username/myapp",
   "description": "Example application",
-  "main": "main.zen"
+  "main": "main.zen",
+  "dependencies": {}
 }
 ```
 
@@ -99,22 +110,47 @@ Every package must:
 
 ## Installing Packages
 
-### Library Packages
+### Latest Version
+
+Install the latest published version:
 
 ```bash
 zen install http
 ```
 
-Installed to:
+### Specific Version
+
+Install an exact published version:
+
+```bash
+zen install http@1.0.0
+```
+
+If the requested version does not exist, installation fails.
+
+### Library Packages
+
+Library packages are installed globally:
 
 ```text
 ~/.zen/packages/
 ```
 
-Imported as:
+Example:
+
+```text
+~/.zen/packages/
+└── drift/
+    ├── main.zen
+    └── zen.json
+```
+
+The installed `zen.json` contains the currently installed version.
+
+Libraries are imported by package name:
 
 ```zen
-import(get) from "http"
+import (App, Request, listen) from "drift"
 ```
 
 ### Runnable Applications
@@ -126,6 +162,98 @@ Remove an installed package:
 ```bash
 zen uninstall <package>
 ```
+
+---
+
+## Dependencies
+
+Packages can depend on other Zen packages.
+
+Dependencies are stored in `zen.json`:
+
+```json
+{
+  "name": "axion",
+  "version": "1.0.0",
+  "author": "your-github-username",
+  "repo": "https://github.com/your-github-username/axion",
+  "description": "Example package",
+  "bin": "main.zen",
+  "dependencies": {
+    "drift": "1.0.0"
+  }
+}
+```
+
+The dependency version specifies the exact version required.
+
+### Automatic Dependency Installation
+
+When installing a package, Zen automatically reads its `dependencies` and installs them recursively.
+
+For example:
+
+```text
+zen install axion
+```
+
+If Axion contains:
+
+```json
+"dependencies": {
+  "drift": "1.0.0"
+}
+```
+
+Zen automatically performs:
+
+```text
+Installing axion...
+    ↓
+Installing drift@1.0.0...
+    ↓
+Installed drift
+    ↓
+Installed axion
+```
+
+Dependencies can themselves have dependencies, and Zen resolves them recursively.
+
+---
+
+## Detecting Dependencies
+
+You normally don't need to manually maintain the dependency list.
+
+Run:
+
+```bash
+zen deps
+```
+
+Zen starts from the package's `main` or `bin` entry point and scans imports recursively.
+
+For example:
+
+```text
+main.zen
+ ├── import "drift"
+ └── import "utils.zen"
+                  └── import "json-utils"
+```
+
+Zen generates:
+
+```json
+"dependencies": {
+  "drift": "1.0.0",
+  "json-utils": "2.0.0"
+}
+```
+
+Local `.zen` files are scanned recursively but are not added as package dependencies.
+
+Comments are ignored during dependency detection.
 
 ---
 
@@ -143,9 +271,79 @@ Requirements:
 - Valid `zen.json`
 - Public GitHub repository
 - Unique package name
-- Version higher than the latest published version
+- Valid Semantic Version
+- Version must not already exist
 
-Updating a package only requires increasing the version and publishing again.
+Before publishing a new release, update the version in `zen.json`.
+
+Example:
+
+```text
+1.0.0 → 1.0.1
+```
+
+Then create the corresponding Git tag:
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+Finally:
+
+```bash
+zen publish
+```
+
+---
+
+## Versioning
+
+Zen follows Semantic Versioning:
+
+```text
+MAJOR.MINOR.PATCH
+```
+
+Examples:
+
+```text
+1.0.0
+1.2.0
+2.0.1
+```
+
+Each published version is permanently recorded by the registry.
+
+A package can have multiple published versions:
+
+```text
+drift
+├── 1.0.0
+├── 1.0.1
+├── 1.1.0
+└── 2.0.0
+```
+
+The latest version is used when no version is specified:
+
+```bash
+zen install drift
+```
+
+A specific version can be selected with:
+
+```bash
+zen install drift@1.0.0
+```
+
+Zen installs the corresponding Git tag:
+
+```text
+v1.0.0
+```
+
+GitHub therefore acts as the source of the actual package release while the Zen registry stores the package/version metadata.
 
 ---
 
@@ -248,6 +446,8 @@ zen mine
 
 ## Package Metadata
 
+A package's current metadata can be retrieved from the registry:
+
 ```json
 {
   "name": "mypackage",
@@ -258,30 +458,44 @@ zen mine
 }
 ```
 
+Individual versions are stored separately in the registry.
+
 ---
 
-## Versioning
+## Release Storage
 
-Zen follows Semantic Versioning (`major.minor.patch`).
+The Zen registry stores metadata for every published version.
 
-Examples:
+For example:
 
 ```text
-1.0.0
-1.2.0
-2.0.1
+Package: drift
+
+Versions:
+  1.0.0 → GitHub tag v1.0.0
+  1.1.0 → GitHub tag v1.1.0
+  2.0.0 → GitHub tag v2.0.0
 ```
 
-Each publish must use a version greater than the currently published version.
+The registry does not store the package source code itself.
+
+Package source code remains in the author's GitHub repository.
 
 ---
 
 ## Important Notes
 
-- The registry stores only the latest published version.
-- Publishing a new version replaces the previous registry entry.
-- Previous releases should be preserved in your GitHub repository.
-- `zen install` automatically clones the repository's default Git branch.
+- The registry stores metadata for every published version.
+- The `latest` field points to the newest published version.
+- Previous releases remain available through their Git tags.
+- `zen install <package>` installs the latest published version.
+- `zen install <package>@<version>` installs the requested exact version.
+- Library packages are installed globally under `~/.zen/packages/`.
+- Library packages do not use separate version directories.
+- Dependencies are installed automatically.
+- Dependencies can have their own dependencies.
+- `zen deps` recursively scans imports to generate the dependency list.
+- Local `.zen` imports are not treated as package dependencies.
 - Library packages are imported by package name without the `.zen` extension.
 
 ---
